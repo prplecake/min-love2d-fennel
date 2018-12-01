@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # LÖVE version
-LOVE_DEF_VERSION=0.11.1
+LOVE_DEF_VERSION=0.11.2
 
 
 
