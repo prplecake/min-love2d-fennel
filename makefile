@@ -36,15 +36,15 @@ FLAGS=-a "$(AUTHOR)" --description $(DESCRIPTION) \
 
 releases/$(NAME)-$(VERSION)-x86_64.AppImage: $(LOVEFILE)
 	cd appimage && ./build.sh 11.1 $(PWD)/$(LOVEFILE)
-	#mv appimage/game-x86_64.AppImage $@
+	mv appimage/game-x86_64.AppImage $@
 
 releases/$(NAME)-$(VERSION)-macos.zip: $(LOVEFILE)
 	$(REL) $(FLAGS) -M
-	#mv releases/$(NAME)-macos.zip $@
+	mv releases/$(NAME)-macos.zip $@
 
 releases/$(NAME)-$(VERSION)-win.zip: $(LOVEFILE)
 	$(REL) $(FLAGS) -W32
-	#mv releases/$(NAME)-win32.zip $@
+	mv releases/$(NAME)-win32.zip $@
 
 linux: releases/$(NAME)-$(VERSION)-x86_64.AppImage
 mac: releases/$(NAME)-$(VERSION)-macos.zip

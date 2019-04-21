@@ -1,6 +1,6 @@
 love.conf = function(t)
    t.gammacorrect = true
-   t.title, t.identity = "Minimal", "Minimal"
+   t.title, t.identity = "change-me", "Minimal"
    t.modules.joystick = false
    t.modules.physics = false
    t.window.width = 720

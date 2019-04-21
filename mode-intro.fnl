@@ -3,7 +3,7 @@
 
 {:draw (fn draw [message]
          (love.graphics.print (: "This window should close in %0.2f seconds"
-                                 :format (- 3 time))) 32 16)
+                                 :format (- 3 time)) 32 16))
  :update (fn update [dt set-mode]
              (if (< counter 65535)
                  (set counter (+ counter 1))
