@@ -1,7 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/local/Cellar/bash/4.4.23/bin/bash
+## #!/usr/bin/env bash
 
 # LÖVE version
-LOVE_DEF_VERSION=0.11.1
+LOVE_DEF_VERSION=0.11.2
 
 
 

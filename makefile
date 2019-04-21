@@ -5,8 +5,23 @@ AUTHOR="Alexander Griffith"
 DESCRIPTION="Minimal setup for trying out Phil Hagelberg's fennel/love game design process."
 
 LIBS := $(wildcard lib/*)
+LUA := $(wildcard *.lua)
+SRC := $(wildcard *.fnl)
+OUT := $(patsubst %.fnl,%.lua,$(SRC))
 
-$(LOVEFILE): $(LUA) $(OUT) $(LIBS) assets text
+run: $(OUT) ; love .
+
+count: ; cloc *.fnl --force-lang=clojure
+
+clean: ; rm -rf releases/* $(OUT)
+
+cleansrc: ; rm -rf $(OUT)
+
+%.lua: %.fnl; lua lib/fennel --compile --correlate $< > $@
+
+LOVEFILE=releases/$(NAME)-$(VERSION).love
+
+$(LOVEFILE): $(LUA) $(OUT) $(LIBS) #assets text
 	mkdir -p releases/
 	find $^ -type f | LC_ALL=C sort | env TZ=UTC zip -r -q -9 -X $@ -@
 
@@ -14,31 +29,33 @@ love: $(LOVEFILE)
 
 # platform-specific distributables
 
-REL="$(PWD)/love-release.sh" # https://p.hagelb.org/love-release.sh
+REL=$(PWD)/love-release.sh # https://p.hagelb.org/love-release.sh
 FLAGS=-a "$(AUTHOR)" --description $(DESCRIPTION) \
 	--love 11.1 --url $(URL) --version $(VERSION) --lovefile $(LOVEFILE)
 
 releases/$(NAME)-$(VERSION)-x86_64.AppImage: $(LOVEFILE)
 	cd appimage && ./build.sh 11.1 $(PWD)/$(LOVEFILE)
-	mv appimage/game-x86_64.AppImage $@
+	#mv appimage/game-x86_64.AppImage $@
 
 releases/$(NAME)-$(VERSION)-macos.zip: $(LOVEFILE)
 	$(REL) $(FLAGS) -M
-	mv releases/EXO_encounter-667-macos.zip $@
+	#mv releases/$(NAME)-macos.zip $@
 
 releases/$(NAME)-$(VERSION)-win.zip: $(LOVEFILE)
 	$(REL) $(FLAGS) -W32
-	mv releases/EXO_encounter-667-win32.zip $@
+	#mv releases/$(NAME)-win32.zip $@
 
 linux: releases/$(NAME)-$(VERSION)-x86_64.AppImage
 mac: releases/$(NAME)-$(VERSION)-macos.zip
 windows: releases/$(NAME)-$(VERSION)-win.zip
 
 uploadlinux: releases/$(NAME)-$(VERSION)-x86_64.AppImage
-	butler push $^ technomancy/exo-encounter-667:linux
+	butler push $^ alexjgriffith/action-slimes:linux --userversion $(VERSION)
 uploadmac: releases/$(NAME)-$(VERSION)-macos.zip
-	butler push $^ technomancy/exo-encounter-667:mac
+	~/Downloads/butler-darwin-amd64/butler push $^ alexjgriffith/action-slimes:mac --userversion $(VERSION)
 uploadwindows: releases/$(NAME)-$(VERSION)-win.zip
-	butler push $^ technomancy/exo-encounter-667:windows
+	~/Downloads/butler-darwin-amd64/butler push $^ alexjgriffith/action-slimes:windows --userversion $(VERSION)
 
-upload: uploadlinux uploadmac uploadwindows
+upload: uploadmac uploadwindows
+
+release: mac windows upload cleansrc
