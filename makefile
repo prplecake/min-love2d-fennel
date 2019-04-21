@@ -1,5 +1,5 @@
 VERSION=0.1.0
-NAME=min-love2d-fennel
+NAME=change-me
 URL=https://gitlab.com/alexjgriffith/min-love2d-fennel
 AUTHOR="Alexander Griffith"
 DESCRIPTION="Minimal setup for trying out Phil Hagelberg's fennel/love game design process."
@@ -8,6 +8,7 @@ LIBS := $(wildcard lib/*)
 LUA := $(wildcard *.lua)
 SRC := $(wildcard *.fnl)
 OUT := $(patsubst %.fnl,%.lua,$(SRC))
+
 
 run: $(OUT) ; love .
 
@@ -31,7 +32,7 @@ love: $(LOVEFILE)
 
 REL=$(PWD)/love-release.sh # https://p.hagelb.org/love-release.sh
 FLAGS=-a "$(AUTHOR)" --description $(DESCRIPTION) \
-	--love 11.1 --url $(URL) --version $(VERSION) --lovefile $(LOVEFILE)
+	--love 11.2 --url $(URL) --version $(VERSION) --lovefile $(LOVEFILE)
 
 releases/$(NAME)-$(VERSION)-x86_64.AppImage: $(LOVEFILE)
 	cd appimage && ./build.sh 11.1 $(PWD)/$(LOVEFILE)
@@ -48,6 +49,9 @@ releases/$(NAME)-$(VERSION)-win.zip: $(LOVEFILE)
 linux: releases/$(NAME)-$(VERSION)-x86_64.AppImage
 mac: releases/$(NAME)-$(VERSION)-macos.zip
 windows: releases/$(NAME)-$(VERSION)-win.zip
+
+# If you release on itch.io, you should install butler:
+# https://itch.io/docs/butler/installing.html
 
 uploadlinux: releases/$(NAME)-$(VERSION)-x86_64.AppImage
 	butler push $^ alexjgriffith/action-slimes:linux --userversion $(VERSION)
