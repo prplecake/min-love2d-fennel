@@ -1,5 +1,4 @@
 (require "love.event")
-(local fennel (require "lib.fennel"))
 (local view (require "lib.fennelview"))
 
 ;; This module exists in order to expose stdio over a channel so that it
@@ -7,51 +6,41 @@
 
 (local (event channel) ...)
 
-(defn display [s]
-  (io.write s)
-  (io.flush))
-
-(defn prompt []
-  (display "\n>> "))
-
-(defn read-chunk []
-  (let [input (io.read)]
-    (when input
-      (.. input "\n"))))
-
-(var input "")
 (when channel
-  (let [(bytestream clearstream) (fennel.granulate read-chunk)
-        read (fennel.parser
-              (fn []
-                (let [c (or (bytestream) 10)]
-                  (set input (.. input (string.char c)))
-                  c)))]
-    (while true
-      (prompt)
-      (set input "")
-      (let [(ok ast) (pcall read)]
-        (if (not ok)
-            (do
-              (display (.. "Parse error:" ast "\n"))
-              ;; fixme: not sure why the following fails
-              ;; (clearstream)
-              )
-            (do
-              (love.event.push event input)
-              (display (: channel :demand))))))))
+  (let [prompt (fn [] (io.write "> ") (io.flush) (io.read "*l"))]
+    ((fn looper [input]
+       (when input
+         ;; This is consumed by love.handlers[event]
+         (love.event.push event input)
+         (let [output (: channel :demand)]
+           ;; There is probably a more efficient way of determining an error
+           (if (and (. output 2) (= "Error:" (. output 2)))
+               (print (view output))
+               (each [_ ret (ipairs output)]
+                 (print ret))))
+         (io.flush)
+         (looper (prompt)))) (prompt))))
 
 {:start (fn start-repl []
+
           (let [code (love.filesystem.read "stdio.fnl")
-                lua (if code
-                        (love.filesystem.newFileData
-                         (fennel.compileString code) "io")
-                        (love.filesystem.read "lib/stdio.lua"))
-                thread (love.thread.newThread lua)
-                io-channel (love.thread.newChannel)]
+                luac (if code
+                         (love.filesystem.newFileData
+                          (fennel.compileString code) "io")
+                         (love.filesystem.read "lib/stdio.lua"))
+                thread (love.thread.newThread luac)
+                io-channel (love.thread.newChannel)
+                coro (coroutine.create fennel.repl)
+                out (fn [val]
+                      (: io-channel :push  val))
+                options {:readChunk coroutine.yield
+                         :onValues out
+                         :onError (fn [kind ...] (out [kind "Error:" ...]))
+                         :pp view
+                         }]
             ;; this thread will send "eval" events for us to consume:
+            (coroutine.resume coro options)
             (: thread :start "eval" io-channel)
             (set love.handlers.eval
                  (fn [input]
-                   (let [(ok val) (pcall fennel.eval input)]
-                     (: io-channel :push (if ok (view val) val)))))))}
+                   (coroutine.resume coro  (.. input "\n"))))))}
