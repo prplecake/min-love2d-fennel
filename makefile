@@ -1,5 +1,6 @@
 VERSION=0.1.0
 NAME=change-me
+ITCH_ACCOUNT=change-me-too
 URL=https://gitlab.com/alexjgriffith/min-love2d-fennel
 AUTHOR="Alexander Griffith"
 DESCRIPTION="Minimal setup for trying out Phil Hagelberg's fennel/love game design process."
@@ -54,12 +55,12 @@ windows: releases/$(NAME)-$(VERSION)-win.zip
 # https://itch.io/docs/butler/installing.html
 
 uploadlinux: releases/$(NAME)-$(VERSION)-x86_64.AppImage
-	butler push $^ alexjgriffith/action-slimes:linux --userversion $(VERSION)
+	butler push $^ $(ITCH_ACCOUNT)/$(NAME):linux --userversion $(VERSION)
 uploadmac: releases/$(NAME)-$(VERSION)-macos.zip
-	~/Downloads/butler-darwin-amd64/butler push $^ alexjgriffith/action-slimes:mac --userversion $(VERSION)
+	butler push $^ $(ITCH_ACCOUNT)/$(NAME):mac --userversion $(VERSION)
 uploadwindows: releases/$(NAME)-$(VERSION)-win.zip
-	~/Downloads/butler-darwin-amd64/butler push $^ alexjgriffith/action-slimes:windows --userversion $(VERSION)
+	butler push $^ $(ITCH_ACCOUNT)/$(NAME):windows --userversion $(VERSION)
 
-upload: uploadmac uploadwindows
+upload: uploadlinux uploadmac uploadwindows
 
-release: mac windows upload cleansrc
+release: linux mac windows upload cleansrc
