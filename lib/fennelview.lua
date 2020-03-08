@@ -15,9 +15,9 @@ do
   long_control_char_escapes = long
 end
 local function escape(str)
-  local str = str:gsub("\\", "\\\\")
-  local str = str:gsub("(%c)%f[0-9]", long_control_char_escapes)
-  return str:gsub("%c", short_control_char_escapes)
+  local str0 = str:gsub("\\", "\\\\")
+  local str1 = str0:gsub("(%c)%f[0-9]", long_control_char_escapes)
+  return str1:gsub("%c", short_control_char_escapes)
 end
 local function sequence_key_3f(k, len)
   return ((type(k) == "number") and (1 <= k) and (k <= len) and (math.floor(k) == k))
@@ -103,11 +103,14 @@ local function put_sequential_table(self, t, len)
   puts(self, "[")
   self.level = (self.level + 1)
   for i = 1, len do
-    puts(self, " ")
+    local _0_ = (1 + len)
+    if ((1 < i) and (i < _0_)) then
+      puts(self, " ")
+    end
     put_value(self, t[i])
   end
   self.level = (self.level - 1)
-  return puts(self, " ]")
+  return puts(self, "]")
 end
 local function put_key(self, k)
   if ((type(k) == "string") and k:find("^[-%w?\\^_!$%&*+./@:|<=>]+$")) then
@@ -136,10 +139,26 @@ local function put_kv_table(self, t, ordered_keys)
   return puts(self, "}")
 end
 local function put_table(self, t)
+  local metamethod = nil
+  do
+    local _0_0 = t
+    if _0_0 then
+      local _1_0 = getmetatable(_0_0)
+      if _1_0 then
+        metamethod = _1_0.__fennelview
+      else
+        metamethod = _1_0
+      end
+    else
+      metamethod = _0_0
+    end
+  end
   if (already_visited_3f(self, t) and self["detect-cycles?"]) then
     return puts(self, "#<table ", get_id(self, t), ">")
   elseif (self.level >= self.depth) then
     return puts(self, "{...}")
+  elseif metamethod then
+    return puts(self, metamethod(t, self.fennelview))
   elseif "else" then
     local non_seq_keys, len = get_nonsequential_keys(t)
     local id = get_id(self, t)
@@ -172,20 +191,23 @@ local function one_line(str)
   return ret
 end
 local function fennelview(x, options)
-  local options = (options or {})
-  local inspector = inspector
-  local function _1_()
-    if options["one-line"] then
+  local options0 = (options or {})
+  local inspector = nil
+  local function _1_(_241)
+    return fennelview(_241, options0)
+  end
+  local function _2_()
+    if options0["one-line"] then
       return ""
     else
       return "  "
     end
   end
-  inspector = {["detect-cycles?"] = not (false == options["detect-cycles?"]), ["max-ids"] = {}, appearances = count_table_appearances(x, {}), buffer = {}, depth = (options.depth or 128), ids = {}, indent = (options.indent or _1_()), level = 0}
+  inspector = {["detect-cycles?"] = not (false == options0["detect-cycles?"]), ["max-ids"] = {}, appearances = count_table_appearances(x, {}), buffer = {}, depth = (options0.depth or 128), fennelview = _1_, ids = {}, indent = (options0.indent or _2_()), level = 0}
   put_value(inspector, x)
   do
     local str = table.concat(inspector.buffer)
-    if options["one-line"] then
+    if options0["one-line"] then
       return one_line(str)
     else
       return str
