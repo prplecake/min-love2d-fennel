@@ -20,57 +20,5 @@ If you design your game as a series of states in a very simple state machine, fo
 
 
 * Emacs Setup
-
-#+BEGIN_SRC emacs-lisp
-(autoload 'fennel-mode "/path/to/fennel-mode" nil t)
-(require 'fennel-mode)
-
-;; By default fennel-mode moves focus to the \*inferior-lisp\* buffer
-;; setting `fennel-mode-switch-to-repl-after-reload' to nil prevents this
-(customize-save-variable 'fennel-mode-switch-to-repl-after-reload nil)
-
-(add-to-list 'auto-mode-alist '("\\.fnl\\'" . fennel-mode))
-
-;; you can bind this to whatever you like
-(defun run-love ()
-  (interactive)
-  (run-lisp "love ."))
-
-;; for some reason when I load a fnl file it starts the slime minor mode
-;; I have included the hook below to prevent this
-(defun fennel-mode-hook-fun ()
-  (interactive)
-  (slime-mode nil))
-
-(add-hook 'fennel-mode-hook 'fennel-mode-hook-fun)
-#+END_SRC
-
-* Known Issues
-Presently fennel.lua has to be in the main directory for =fennel-reload= from fennel-mode.el to work. The issue is
-
-#+BEGIN_SRC elisp
-(let [old (require :module-name)
-      _ (tset package.loaded :module-name nil)
-     (ok new) (pcall require :module-name) ;; fails if fennel not in base directory
-     new (if (not ok) (do (print new) old) new)]
-  (when (= (type new) :table)
-    (each [k v (pairs new)] (tset old k v))
-    (each [k (pairs old)] (when (not (. new k)) (tset old k nil)))
-    (tset package.loaded :module-name old)))
-#+END_SRC
-
-
-The error that gets thrown is.
-#+BEGIN_SRC
-./module-name.fnl:#Some Number#: module 'fennel' not found:
-        no field package.preload['fennel']
-        no 'fennel' in LOVE game directories.
-        no file 'fennel' in LOVE paths.
-        no file './fennel.lua'
-        no file '/usr/local/share/luajit-2.0.5/fennel.lua'
-        no file '/usr/local/share/lua/5.1/fennel.lua'
-        no file '/usr/local/share/lua/5.1/fennel/init.lua'
-        no file './fennel.so'
-        no file '/usr/local/lib/lua/5.1/fennel.so'
-        no file '/usr/local/lib/lua/5.1/loadall.so'
-#+END_SRC
+Once you install the latest version of [[https://gitlab.com/technomancy/fennel-mode][fennel-mode]], you can run
+=C-u M-x fennel-repl= followed by =love .= to launch a repl.

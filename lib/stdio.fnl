@@ -37,7 +37,7 @@
                          :onValues out
                          :onError (fn [kind ...] (out [kind "Error:" ...]))
                          :pp view
-                         }]
+                         :moduleName "lib.fennel"}]
             ;; this thread will send "eval" events for us to consume:
             (coroutine.resume coro options)
             (: thread :start "eval" io-channel)
