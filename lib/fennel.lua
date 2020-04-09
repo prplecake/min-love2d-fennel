@@ -1403,8 +1403,11 @@ SPECIALS["fn"] = function(ast, scope, parent)
     local isLocalFn
     local docstring
     fScope.vararg = false
+    local multi = fnName and isMultiSym(fnName[1])
+    assertCompile(not multi or not multi.multiSymMethodCall,
+                  "malformed function name: " .. tostring(fnName), ast)
     if fnName and fnName[1] ~= 'nil' then
-        isLocalFn = not isMultiSym(fnName[1])
+        isLocalFn = not multi
         if isLocalFn then
             fnName = declareLocal(fnName, {}, scope, ast)
         else
@@ -1473,8 +1476,8 @@ SPECIALS["fn"] = function(ast, scope, parent)
                              :gsub('"', '\\"') .. '"')
         end
         local metaStr = ('require("%s").metadata'):format(rootOptions.moduleName or "fennel")
-        emit(parent, string.format('%s:setall(%s, %s)', metaStr,
-                                   fnName, table.concat(metaFields, ', ')))
+        emit(parent, string.format('pcall(function() %s:setall(%s, %s) end)',
+                                   metaStr, fnName, table.concat(metaFields, ', ')))
     end
 
     checkUnused(fScope, ast)
@@ -2017,7 +2020,7 @@ docSpecial("length", {"x"}, "Returns the length of a table or string.")
 SPECIALS["#"] = SPECIALS["length"]
 
 -- Save current macro scope
-local macroCurrentScope = GLOBAL_SCOPE
+local macroCurrentScope = nil
 
 -- Covert a macro function to a special form
 local function macroToSpecial(mac)
@@ -2523,15 +2526,22 @@ local function makeCompilerEnv(ast, scope, parent)
         list = list,
         sym = sym,
         unpack = unpack,
-        gensym = function() return sym(gensym(macroCurrentScope)) end,
+        gensym = function() return sym(gensym(macroCurrentScope or scope)) end,
         ["list?"] = isList,
         ["multi-sym?"] = isMultiSym,
         ["sym?"] = isSym,
         ["table?"] = isTable,
         ["sequence?"] = isSequence,
         ["varg?"] = isVarg,
-        ["get-scope"] = function() return macroCurrentScope end,
+        ["get-scope"] = function()
+            if io and io.stderr then
+                io.stderr:
+                 write(("-- %s:%s get-scope is deprecated and will be removed\n"):
+                 format(ast.filename, ast.line))
+            end
+            return macroCurrentScope end,
         ["in-scope?"] = function(symbol)
+            assertCompile(macroCurrentScope, "must call in-scope? from macro", ast)
             return macroCurrentScope.manglings[tostring(symbol)]
         end
     }, { __index = _ENV or _G })
@@ -2617,7 +2627,7 @@ SPECIALS['include'] = function(ast, scope, parent, opts)
     emit(tempChunk, subChunk, ast)
     -- if lua, simply emit the setting of package.preload
     if not isFennel then
-        emit(tempChunk, target .. ' = ' .. target .. ' or function()\n' .. s .. 'end', ast)
+        emit(tempChunk, target .. ' = ' .. target .. ' or function()\n' .. s .. '\nend', ast)
     end
     -- Splice tempChunk to begining of rootChunk
     for i, v in ipairs(tempChunk) do

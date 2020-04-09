@@ -1,8 +1,9 @@
 VERSION=0.1.0
+LOVE_VERSION=11.3
 NAME=change-me
 ITCH_ACCOUNT=change-me-too
 URL=https://gitlab.com/alexjgriffith/min-love2d-fennel
-AUTHOR="Alexander Griffith"
+AUTHOR="Your Name"
 DESCRIPTION="Minimal setup for trying out Phil Hagelberg's fennel/love game design process."
 
 LIBS := $(wildcard lib/*)
@@ -33,10 +34,10 @@ love: $(LOVEFILE)
 
 REL=$(PWD)/love-release.sh # https://p.hagelb.org/love-release.sh
 FLAGS=-a "$(AUTHOR)" --description $(DESCRIPTION) \
-	--love 11.2 --url $(URL) --version $(VERSION) --lovefile $(LOVEFILE)
+	--love $(LOVE_VERSION) --url $(URL) --version $(VERSION) --lovefile $(LOVEFILE)
 
 releases/$(NAME)-$(VERSION)-x86_64.AppImage: $(LOVEFILE)
-	cd appimage && ./build.sh 11.1 $(PWD)/$(LOVEFILE)
+	cd appimage && ./build.sh $(LOVE_VERSION) $(PWD)/$(LOVEFILE)
 	mv appimage/game-x86_64.AppImage $@
 
 releases/$(NAME)-$(VERSION)-macos.zip: $(LOVEFILE)

@@ -1,8 +1,10 @@
-#!/usr/local/Cellar/bash/4.4.23/bin/bash
-## #!/usr/bin/env bash
+#!/usr/bin/env bash
+
+## For users on macos
+## #!/usr/local/Cellar/bash/4.4.23/bin/bash
 
 # LÖVE version
-LOVE_DEF_VERSION=0.11.2
+LOVE_DEF_VERSION=0.11.3
 
 
 
