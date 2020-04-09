@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-## For users on macos
-## #!/usr/local/Cellar/bash/4.4.23/bin/bash
-
 # LÖVE version
 LOVE_DEF_VERSION=0.11.3
 
@@ -978,7 +975,8 @@ if [[ $X32 == true ]]; then
     fi
 
     # version number is incorrect inside zip file; oops
-    LOVE_VERSION="$LOVE_VERSION".0
+    # LOVE_VERSION="$LOVE_VERSION".0
+    # Fixed for 11.3 and up
     cat love-$LOVE_VERSION-win32/love.exe "$LOVE_FILE" > "love-$LOVE_VERSION-win32/${TITLE}.exe"
     rm love-$LOVE_VERSION-win32/love.exe
     mv love-$LOVE_VERSION-win32 "$TITLE"-win32
