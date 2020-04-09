@@ -87,7 +87,7 @@ main() {
 
         # Work around missing FUSE/docker
         ./appimagetool-${ARCH}.AppImage --appimage-extract
-        ./squashfs-root/AppRun love-prepared "${target}-${ARCH}.AppImage"
+        ./squashfs-root/AppRun -n love-prepared "${target}-${ARCH}.AppImage"
 }
 
 main "$@"
