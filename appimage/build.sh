@@ -13,11 +13,21 @@ fi
 VERSION="$1"
 LOVEFILE="$2"
 
-LOVE_TAR_URL=https://bitbucket.org/rude/love/downloads/love-${VERSION}-linux-${ARCH}.tar.gz
-LOVE_TAR=${HOME}/.cache/love-release/love/love-${VERSION}-${ARCH}.tar.gz
+LOVE_TAR_URL=https://github.com/love2d/love/releases/download/${VERSION}/love-${VERSION}-linux-${ARCH}.tar.gz
+CACHE_DIR=${HOME}/.cache/love-release/love
+LOVE_TAR=$CACHE_DIR/love-${VERSION}-${ARCH}.tar.gz
+
+if ! test -d ${CACHE_DIR}; then
+    mkdir ${CACHE_DIR}
+fi
+
 if ! test -f ${LOVE_TAR}; then
-        echo "No tarball found for $VERSION in $LOVE_TAR"
-        exit 1
+    curl -L -C - -o ${LOVE_TAR} ${LOVE_TAR_URL}
+fi
+
+if ! test -f ${LOVE_TAR}; then
+    echo "No tarball found for $VERSION in $LOVE_TAR"
+    exit 1
 fi
 
 download_if_needed() {
