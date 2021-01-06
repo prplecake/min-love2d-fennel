@@ -14,11 +14,24 @@ rm -rf .git
 #+END_SRC
 
 * Phil's Modal Callbacks (PMC)
+
 Phil Hegelberg's [[https://gitlab.com/technomancy/exo-encounter-667/][exo-encounter-667]] is structured using a modal callback system. Each game state has a mode and each mode has a series of specific callbacks.
 
 If you design your game as a series of states in a very simple state machine, for example *start-screen*, *play* and *end*, with unidirectional progression, you can easily separate the logic for each state into state/mode specific callbacks. As an example, in order to have state dependant rendering that differs between start-screen,play and end you could provide a *draw* callback for each of those states. Similarly if we need state dependent logic and keyboard input we could provide *update* and *keyboard* callbacks. As you iterate you can add and remove callbacks and states/modes as needed with very little friction.
 
-
 * Emacs Setup
+
 Once you install the latest version of [[https://gitlab.com/technomancy/fennel-mode][fennel-mode]], you can run
 =C-u M-x fennel-repl= followed by =love .= to launch a repl.
+
+* Project Structure
+
+The =make= process as-is will only compile the contents of the root folder and the =lib/= folder, so make sure to put your game files in either of those two folders. 
+
+Specifically, every =.fnl= file needed at runtime needs to be situated in the root folder, and every file which is not a =.lua= or =.fnl= file needs to be put in the =lib/= folder.
+
+In order to use macros, they have to be put in =.fnl= files inside the =lib/= folder.
+
+* Release Process
+
+Use =make linux=, =make windows=, or =make mac= to create executables for each platform, or =make release= to do all three. Make sure to read the makefile for more commands (and remember to edit your game data in it!)
