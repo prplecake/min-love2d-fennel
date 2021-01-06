@@ -26,11 +26,11 @@ Once you install the latest version of [[https://gitlab.com/technomancy/fennel-m
 
 * Project Structure
 
-The =make= process as-is will only compile the contents of the root folder and the =lib/= folder, so make sure to put your game files in either of those two folders. 
+The =make= process as-is will only compile the contents of the root folder and the =lib/= folder+subfolders, so make sure to put your game files in either of those. 
 
-Specifically, every =.fnl= file needed at runtime needs to be situated in the root folder, and every file which is not a =.lua= or =.fnl= file needs to be put in the =lib/= folder.
+Specifically, every =.fnl= file needed at runtime needs to be situated in the root folder, and every file which is not a =.lua= or =.fnl= file needs to be put inside =lib/=.
 
-In order to use macros, they have to be put in =.fnl= files inside the =lib/= folder.
+In order to use macros, they have to be put in =.fnl= files inside =lib/=.
 
 * Release Process
 
