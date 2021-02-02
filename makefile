@@ -24,7 +24,7 @@ cleansrc: ; rm -rf $(OUT)
 
 LOVEFILE=releases/$(NAME)-$(VERSION).love
 
-$(LOVEFILE): $(LUA) $(OUT) $(LIBS) #assets text
+$(LOVEFILE): $(LUA) $(OUT) $(LIBS)
 	mkdir -p releases/
 	find $^ -type f | LC_ALL=C sort | env TZ=UTC zip -r -q -9 -X $@ -@
 
@@ -37,8 +37,8 @@ FLAGS=-a "$(AUTHOR)" --description $(DESCRIPTION) \
 	--love $(LOVE_VERSION) --url $(URL) --version $(VERSION) --lovefile $(LOVEFILE)
 
 releases/$(NAME)-$(VERSION)-x86_64.AppImage: $(LOVEFILE)
-	cd appimage && ./build.sh $(LOVE_VERSION) $(PWD)/$(LOVEFILE)
-	mv appimage/game-x86_64.AppImage $@
+	cd buildtools/appimage && ./build.sh $(LOVE_VERSION) $(PWD)/$(LOVEFILE)
+	mv buildtools/appimage/game-x86_64.AppImage $@
 
 releases/$(NAME)-$(VERSION)-macos.zip: $(LOVEFILE)
 	$(REL) $(FLAGS) -M
@@ -48,9 +48,13 @@ releases/$(NAME)-$(VERSION)-win.zip: $(LOVEFILE)
 	$(REL) $(FLAGS) -W32
 	mv releases/$(NAME)-win32.zip $@
 
+releases/$(NAME)-$(VERSION)-web.zip: $(LOVEFILE)
+	cd releases && ../buildtools/love-js/love-js.sh $(PWD)/releases $(NAME) $(VERSION)
+
 linux: releases/$(NAME)-$(VERSION)-x86_64.AppImage
 mac: releases/$(NAME)-$(VERSION)-macos.zip
 windows: releases/$(NAME)-$(VERSION)-win.zip
+web: releases/$(NAME)-$(VERSION)-web.zip
 
 # If you release on itch.io, you should install butler:
 # https://itch.io/docs/butler/installing.html
@@ -61,6 +65,8 @@ uploadmac: releases/$(NAME)-$(VERSION)-macos.zip
 	butler push $^ $(ITCH_ACCOUNT)/$(NAME):mac --userversion $(VERSION)
 uploadwindows: releases/$(NAME)-$(VERSION)-win.zip
 	butler push $^ $(ITCH_ACCOUNT)/$(NAME):windows --userversion $(VERSION)
+uploadweb: releases/$(NAME)-$(VERSION)-web.zip
+	butler push $^ $(ITCH_ACCOUNT)/$(NAME):web --userversion $(VERSION)
 
 upload: uploadlinux uploadmac uploadwindows
 

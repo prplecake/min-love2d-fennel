@@ -24,7 +24,6 @@
            (looper (prompt next-line))))) (prompt))))
 
 {:start (fn start-repl []
-
           (let [code (love.filesystem.read "lib/stdio.fnl")
                 luac (if code
                          (love.filesystem.newFileData

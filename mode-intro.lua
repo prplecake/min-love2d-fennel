@@ -1,0 +1,76 @@
+ local counter = 0 local time = 0
+
+
+ local function draw(message)
+ return love.graphics.print(("This window should close in %0.2f seconds"):format((3 - time)), 32, 16) end
+
+
+
+
+
+
+
+
+ local function keypressed(key, set_mode)
+ return love.event.quit() end local function update(dt, set_mode) if (counter < 65535) then counter = (counter + 1) else counter = 0 end time = (time + dt)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ if (time > 3) then return love.event.quit() end end return {draw = draw, keypressed = keypressed, update = update}
