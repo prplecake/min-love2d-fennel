@@ -1,6 +1,6 @@
 * Minimal Fennel Love2D Setup
 
-In a lead up to the annual [[https://itch.io/jam/autumn-lisp-game-jam-2018][Autumn Lisp Game Jam]] I thought I'd look into Phil Hegelberg's approach to last Aprils Jam, using [[https://love2d.org/][love2d]] in concert with [[https://fennel-lang.org/][fennel]]. Phil outlines his approach on his [[https://love2d.org/][blog]].
+In a lead up to the annual [[https://itch.io/jam/autumn-lisp-game-jam-2018][Autumn Lisp Game Jam]] I thought I'd look into Phil Hegelberg's approach to last Aprils Jam, using [[https://love2d.org/][love2d]] in concert with [[https://fennel-lang.org/][fennel]]. Phil outlines his approach on his [[https://technomancy.us/187][blog]].
 
 The first step is to see how fennel works as a standalone execution environment, then slowly integrate some of the love2d API.
 
