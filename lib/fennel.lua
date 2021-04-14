@@ -898,6 +898,16 @@ package.preload["fennel.specials"] = package.preload["fennel.specials"] or funct
     else
       return nil, true, 2
     end
+    compiler.emit(parent, string.format(_0_, fn_name, table.concat(arg_name_list, ", ")), ast)
+    compiler.emit(parent, f_chunk, ast)
+    compiler.emit(parent, "end", ast)
+    set_fn_metadata(arg_list, docstring, parent, fn_name)
+    utils.hook("fn", ast, f_scope)
+    return utils.expr(fn_name, "sym")
+  end
+  local function compile_anonymous_fn(ast, f_scope, f_chunk, parent, index, arg_name_list, arg_list, docstring, scope)
+    local fn_name = compiler.gensym(scope)
+    return compile_named_fn(ast, f_scope, f_chunk, parent, index, fn_name, true, arg_name_list, arg_list, docstring)
   end
   local function compile_named_fn(ast, f_scope, f_chunk, parent, index, fn_name, local_3f, arg_name_list, arg_list, docstring)
     for i = (index + 1), #ast do
@@ -2235,7 +2245,14 @@ package.preload["fennel.compiler"] = package.preload["fennel.compiler"] or funct
       if ((se.type == "expression") and (se[1] ~= "nil")) then
         emit(chunk, string.format("do local _ = %s end", tostring(se)), ast)
       elseif (se.type == "statement") then
-        emit(chunk, disambiguate_parens(tostring(se), chunk), ast)
+        local code = tostring(se)
+        local unambiguous_code = nil
+        if (code:byte() == 40) then
+          unambiguous_code = ("; " .. code)
+        else
+          unambiguous_code = code
+        end
+        emit(chunk, unambiguous_code, ast)
       end
     end
     return nil
@@ -3706,19 +3723,19 @@ local function dofile_2a(filename, options, ...)
   opts.filename = filename
   return eval(source, opts, ...)
 end
-local mod = {["comment?"] = utils["comment?"], ["compile-stream"] = compiler["compile-stream"], ["compile-string"] = compiler["compile-string"], ["list?"] = utils["list?"], ["load-code"] = specials["load-code"], ["macro-loaded"] = specials["macro-loaded"], ["macro-searchers"] = specials["macro-searchers"], ["make-searcher"] = specials["make-searcher"], ["search-module"] = specials["search-module"], ["sequence?"] = utils["sequence?"], ["string-stream"] = parser["string-stream"], ["sym-char?"] = parser["sym-char?"], ["sym?"] = utils["sym?"], comment = utils.comment, compile = compiler.compile, compile1 = compiler.compile1, compileStream = compiler["compile-stream"], compileString = compiler["compile-string"], doc = specials.doc, dofile = dofile_2a, eval = eval, gensym = compiler.gensym, granulate = parser.granulate, list = utils.list, loadCode = specials["load-code"], macroLoaded = specials["macro-loaded"], makeSearcher = specials["make-searcher"], make_searcher = specials["make-searcher"], mangle = compiler["global-mangling"], metadata = compiler.metadata, parser = parser.parser, path = utils.path, repl = repl, scope = compiler["make-scope"], searchModule = specials["search-module"], searcher = specials["make-searcher"](), sequence = utils.sequence, stringStream = parser["string-stream"], sym = utils.sym, traceback = compiler.traceback, unmangle = compiler["global-unmangling"], varg = utils.varg, version = "0.9.1", view = view}
+local mod = {["comment?"] = utils["comment?"], ["compile-stream"] = compiler["compile-stream"], ["compile-string"] = compiler["compile-string"], ["list?"] = utils["list?"], ["load-code"] = specials["load-code"], ["macro-loaded"] = specials["macro-loaded"], ["macro-searchers"] = specials["macro-searchers"], ["make-searcher"] = specials["make-searcher"], ["search-module"] = specials["search-module"], ["sequence?"] = utils["sequence?"], ["string-stream"] = parser["string-stream"], ["sym-char?"] = parser["sym-char?"], ["sym?"] = utils["sym?"], comment = utils.comment, compile = compiler.compile, compile1 = compiler.compile1, compileStream = compiler["compile-stream"], compileString = compiler["compile-string"], doc = specials.doc, dofile = dofile_2a, eval = eval, gensym = compiler.gensym, granulate = parser.granulate, list = utils.list, loadCode = specials["load-code"], macroLoaded = specials["macro-loaded"], makeSearcher = specials["make-searcher"], make_searcher = specials["make-searcher"], mangle = compiler["global-mangling"], metadata = compiler.metadata, parser = parser.parser, path = utils.path, repl = repl, scope = compiler["make-scope"], searchModule = specials["search-module"], searcher = specials["make-searcher"](), sequence = utils.sequence, stringStream = parser["string-stream"], sym = utils.sym, traceback = compiler.traceback, unmangle = compiler["global-unmangling"], varg = utils.varg, version = "0.9.0", view = view}
 utils["fennel-module"] = mod
 do
   local builtin_macros = [===[;; This module contains all the built-in Fennel macros. Unlike all the other
   ;; modules that are loaded by the old bootstrap compiler, this runs in the
   ;; compiler scope of the version of the compiler being defined.
-  
+
   ;; The code for these macros is somewhat idiosyncratic because it cannot use any
   ;; macros which have not yet been defined.
-  
+
   ;; TODO: some of these macros modify their arguments; we should stop doing that,
   ;; but in a way that preserves file/line metadata.
-  
+
   (fn ->* [val ...]
     "Thread-first macro.
   Take the first value and splice it into the second form as its first argument.
@@ -3729,7 +3746,7 @@ do
         (table.insert elt 2 x)
         (set x elt)))
     x)
-  
+
   (fn ->>* [val ...]
     "Thread-last macro.
   Same as ->, except splices the value into the last position of each form
@@ -3740,7 +3757,7 @@ do
         (table.insert elt x)
         (set x elt)))
     x)
-  
+
   (fn -?>* [val ...]
     "Nil-safe thread-first macro.
   Same as -> except will short-circuit with nil when it encounters a nil value."
@@ -3755,7 +3772,7 @@ do
              (if ,tmp
                  (-?> ,el ,(unpack els))
                  ,tmp)))))
-  
+
   (fn -?>>* [val ...]
     "Nil-safe thread-last macro.
   Same as ->> except will short-circuit with nil when it encounters a nil value."
@@ -3770,14 +3787,14 @@ do
              (if ,tmp
                  (-?>> ,el ,(unpack els))
                  ,tmp)))))
-  
+
   (fn ?dot [tbl k ...]
     "Nil-safe table look up.
   Same as . (dot), except will short-circuit with nil when it encounters
   a nil value in any of subsequent keys."
     (if (= nil k) tbl `(let [res# (. ,tbl ,k)]
                          (and res# (?. res# ,...)))))
-  
+
   (fn doto* [val ...]
     "Evaluates val and splices it into the first argument of subsequent forms."
     (let [name (gensym)
@@ -3787,7 +3804,7 @@ do
         (table.insert form elt))
       (table.insert form name)
       form))
-  
+
   (fn when* [condition body1 ...]
     "Evaluate body for side-effects only when condition is truthy."
     (assert body1 "expected body")
@@ -3795,7 +3812,7 @@ do
          (do
            ,body1
            ,...)))
-  
+
   (fn with-open* [closable-bindings ...]
     "Like `let`, but invokes (v:close) on each binding after evaluating the body.
   The body is evaluated inside `xpcall` so that bound values will be closed upon
@@ -3812,13 +3829,13 @@ do
       `(let ,closable-bindings
          ,closer
          (close-handlers# (xpcall ,bodyfn ,traceback)))))
-  
+
   (fn collect* [iter-tbl key-value-expr ...]
     "Returns a table made by running an iterator and evaluating an expression
   that returns key-value pairs to be inserted sequentially into the table.
   This can be thought of as a \"table comprehension\". The provided key-value
   expression must return either 2 values, or nil.
-  
+
   For example,
     (collect [k v (pairs {:apple \"red\" :orange \"orange\"})]
       (values v k))
@@ -3834,12 +3851,12 @@ do
          (match ,key-value-expr
            (k# v#) (tset tbl# k# v#)))
        tbl#))
-  
+
   (fn icollect* [iter-tbl value-expr ...]
     "Returns a sequential table made by running an iterator and evaluating an
   expression that returns values to be inserted sequentially into the table.
   This can be thought of as a \"list comprehension\".
-  
+
   For example,
     (icollect [_ v (ipairs [1 2 3 4 5])] (when (> v 2) (* v v)))
   returns
@@ -3853,7 +3870,7 @@ do
        (each ,iter-tbl
          (tset tbl# (+ (length tbl#) 1) ,value-expr))
        tbl#))
-  
+
   (fn partial* [f ...]
     "Returns a function with all arguments partially applied to f."
     (assert f "expected a function to partially apply")
@@ -3861,10 +3878,10 @@ do
       (table.insert body _VARARG)
       `(fn [,_VARARG]
          ,body)))
-  
+
   (fn pick-args* [n f]
     "Creates a function of arity n that applies its arguments to f.
-  
+
   For example,
     (pick-args 2 func)
   expands to
@@ -3876,10 +3893,10 @@ do
         (tset bindings i (gensym)))
       `(fn ,bindings
          (,f ,(unpack bindings)))))
-  
+
   (fn pick-values* [n ...]
     "Like the `values` special, but emits exactly n values.
-  
+
   For example,
     (pick-values 2 ...)
   expands to
@@ -3894,7 +3911,7 @@ do
       (if (= n 0) `(values)
           `(let [,let-syms ,let-values]
              (values ,(unpack let-syms))))))
-  
+
   (fn lambda* [...]
     "Function literal with arity checking.
   Will throw an exception if a declared argument is passed in as nil, unless
@@ -3921,26 +3938,26 @@ do
                                                   ,(tostring a)
                                                   ,(or a.filename :unknown)
                                                   ,(or a.line "?"))))))
-  
+
       (assert (= :table (type arglist)) "expected arg list")
       (each [_ a (ipairs arglist)]
         (check! a))
       (if empty-body?
           (table.insert args (sym :nil)))
       `(fn ,(unpack args))))
-  
+
   (fn macro* [name ...]
     "Define a single macro."
     (assert (sym? name) "expected symbol for macro name")
     (local args [...])
     `(macros {,(tostring name) (fn ,(unpack args))}))
-  
+
   (fn macrodebug* [form return?]
     "Print the resulting form after performing macroexpansion.
   With a second argument, returns expanded form as a string instead of printing."
     (let [handle (if return? `do `print)]
       `(,handle ,(view (macroexpand form _SCOPE)))))
-  
+
   (fn import-macros* [binding1 module-name1 ...]
     "Binds a table of macros from each macro module according to a binding form.
   Each binding form can be either a symbol or a k/v destructuring table.
@@ -3971,9 +3988,9 @@ do
                           (tostring modname)))
               (tset scope.macros import-key (. subscope.macros macro-name))))))
     nil)
-  
+
   ;;; Pattern matching
-  
+
   (fn match-values [vals pattern unifications match-pattern]
     (let [condition `(and)
           bindings []]
@@ -3984,7 +4001,7 @@ do
           (each [_ b (ipairs subbindings)]
             (table.insert bindings b))))
       (values condition bindings)))
-  
+
   (fn match-table [val pattern unifications match-pattern]
     (let [condition `(and (= (type ,val) :table))
           bindings []]
@@ -4016,7 +4033,7 @@ do
               (each [_ b (ipairs subbindings)]
                 (table.insert bindings b)))))
       (values condition bindings)))
-  
+
   (fn match-pattern [vals pattern unifications]
     "Takes the AST of values and a single pattern and returns a condition
   to determine if it matches as well as a list of bindings to
@@ -4056,7 +4073,7 @@ do
           (match-table val pattern unifications match-pattern)
           ;; literal value
           (values `(= ,val ,pattern) []))))
-  
+
   (fn match-condition [vals clauses]
     "Construct the actual `if` AST for the given match values and clauses."
     (if (not= 0 (% (length clauses) 2)) ; treat odd final clause as default
@@ -4070,7 +4087,7 @@ do
           (table.insert out `(let ,bindings
                                ,body))))
       out))
-  
+
   (fn match-val-syms [clauses]
     "How many multi-valued clauses are there? return a list of that many gensyms."
     (let [syms (list (gensym))]
@@ -4080,7 +4097,7 @@ do
               (if (not (. syms valnum))
                   (tset syms valnum (gensym))))))
       syms))
-  
+
   (fn match* [val ...]
     ;; Old implementation of match macro, which doesn't directly support
     ;; `where' and `or'. New syntax is implemented in `match-where',
@@ -4090,9 +4107,9 @@ do
       ;; protect against multiple evaluation of the value, bind against as
       ;; many values as we ever match against in the clauses.
       (list `let [vals val] (match-condition vals clauses))))
-  
+
   ;; Construction of old match syntax from new syntax
-  
+
   (fn partition-2 [seq]
     ;; Partition `seq` by 2.
     ;; If `seq` has odd amount of elements, the last one is dropped.
@@ -4112,7 +4129,7 @@ do
           (if (not= nil v2)
               (table.insert res [v1 v2]))))
       res))
-  
+
   (fn transform-or [[_ & pats] guards]
     ;; Transforms `(or pat pats*)` lists into match `guard` patterns.
     ;;
@@ -4121,7 +4138,7 @@ do
       (each [_ pat (ipairs pats)]
         (table.insert res (list pat `? (unpack guards))))
       res))
-  
+
   (fn transform-cond [cond]
     ;; Transforms `where` cond into sequence of `match` guards.
     ;;
@@ -4136,12 +4153,12 @@ do
               [(list second `? (unpack cond 3))]))
         :else
         [cond]))
-  
+
   (fn match-where [val ...]
     "Perform pattern matching on val. See reference for details.
-  
+
   Syntax:
-  
+
   (match data-expression
     pattern body
     (where pattern guard guards*) body
@@ -4157,7 +4174,7 @@ do
       (if else-branch
           (table.insert match-body else-branch))
       (match* val (unpack match-body))))
-  
+
   {:-> ->*
    :->> ->>*
    :-?> -?>*

@@ -1,27 +1,29 @@
 (require "love.event")
-(local view (require "lib.fennelview"))
+(local {: view} (require :lib.fennel))
 
 ;; This module exists in order to expose stdio over a channel so that it
 ;; can be used in a non-blocking way from another thread.
 
 (local (event channel) ...)
 
+(fn prompt [next-line?]
+  (io.write (if next-line? ".." ">> ")) (io.flush) (.. (io.read) "\n"))
+
 (when channel
-  (let [prompt (fn [next-line?] (io.write (if next-line? ".." ">> ")) (io.flush) (.. (io.read) "\n"))]
-    ((fn looper [input]
-       (when input
-         ;; This is consumed by love.handlers[event]
-         (love.event.push event input)
-         (let [output (: channel :demand)
-               next-line (and (. output 2) (= "next-line" (. output 2)))]
-           ;; There is probably a more efficient way of determining an error
-           (if next-line :ok
-               (and (. output 2) (= "Error:" (. output 2)))
-               (print (view output))
-               (each [_ ret (ipairs output)]
-                 (print ret)))
-           (io.flush)
-           (looper (prompt next-line))))) (prompt))))
+  ((fn looper [input]
+     (when input
+       ;; This is consumed by love.handlers[event]
+       (love.event.push event input)
+       (let [output (: channel :demand)
+             next-line (and (. output 2) (= "next-line" (. output 2)))]
+         ;; There is probably a more efficient way of determining an error
+         (if next-line :ok
+             (and (. output 2) (= "Error:" (. output 2)))
+             (print (view output))
+             (each [_ ret (ipairs output)]
+               (print ret)))
+         (io.flush)
+         (looper (prompt next-line))))) (prompt)))
 
 {:start (fn start-repl []
           (let [code (love.filesystem.read "lib/stdio.fnl")
