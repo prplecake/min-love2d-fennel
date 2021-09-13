@@ -32,7 +32,7 @@ love: $(LOVEFILE)
 
 # platform-specific distributables
 
-REL=$(PWD)/love-release.sh # https://p.hagelb.org/love-release.sh
+REL=$(PWD)/buildtools/love-release.sh # https://p.hagelb.org/love-release.sh
 FLAGS=-a "$(AUTHOR)" --description $(DESCRIPTION) \
 	--love $(LOVE_VERSION) --url $(URL) --version $(VERSION) --lovefile $(LOVEFILE)
 

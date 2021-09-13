@@ -1,4 +1,3 @@
-
 var Module;
 
 if (typeof Module === 'undefined') Module = eval('(function() { try { return Module || {} } catch(e) { return {} } })()');
@@ -20,8 +19,8 @@ Module.expectedDataFileDownloads++;
     } else {
       throw 'using preloaded data can only be done on a web page or in a web worker';
     }
-    var PACKAGE_NAME = 'game.data';
-    var REMOTE_PACKAGE_BASE = 'game.data';
+    var PACKAGE_NAME = 'game.love';
+    var REMOTE_PACKAGE_BASE = 'game.love';
     if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
       Module['locateFile'] = Module['locateFilePackage'];
       Module.printErr('warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)');
@@ -90,7 +89,7 @@ Module.expectedDataFileDownloads++;
       function assert(check, msg) {
         if (!check) throw msg + new Error().stack;
       }
-      {{{create_file_paths}}}
+      // {{{create_file_paths}}}
 
       function DataRequest(start, end, crunched, audio) {
         this.start = start;

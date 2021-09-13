@@ -30,10 +30,10 @@ if [ ! -f $release_dir/$name-$version.love ]; then
 fi
 
 release="compat"
-canvas_colour="197, 204, 184"
+canvas_colour="62, 50, 100"
 page_colour=$canvas_colour
-text_colour="102, 96, 146"
-initial_memory=$(du -b $release_dir/$name-$version.love | awk '{print $1}')
+text_colour="223, 7, 114"
+initial_memory=0 #$(du -b $release_dir/$name-$version.love | awk '{print $1}')
 title=$(echo $name-$version | sed -r 's/\<./\U&/g' | sed -r 's/-/\ /g')
 
 # echo $title " " $canvas_colour " " $text_colour " " $initial_memory
@@ -54,9 +54,13 @@ cat src/love.css | \
     sed "s/{{page-colour}}/${page_colour}/g" > \
         $name-$version/theme/love.css
 
+cat src/game.js | \
+    sed "s/{{{metadata}}}/{\"package_uuid\":\"2fd99e56-5455-45dd-86dd-7af724874d65\",\"remote_package_size\":4506139,\"files\":[{\"filename\":\"\/game.love\",\"crunched\":0,\"start\":0,\"end\":4506139,\"audio\":false}]}/" > \
+        $name-$version/game.js
+
 cp src/consolewrapper.js $name-$version
-cp src/game.js $name-$version
-cp $release_dir/$name-$version.love $name-$version/game.data
+# cp src/game.js $name-$version
+cp $release_dir/$name-$version.love $name-$version/game.love
 cp src/$release/love.js $name-$version
 cp src/$release/love.wasm $name-$version
 cp src/release/love.worker.js $name-$version

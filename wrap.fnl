@@ -14,10 +14,10 @@
     (match (pcall mode.activate ...)
       (false msg) (print mode-name "activate error" msg))))
 
-(fn love.load []
+(fn love.load [args]
   (set-mode :mode-intro)
   (canvas:setFilter "nearest" "nearest")
-  (repl.start))
+  (when (~= :web (. args 1)) (repl.start)))
 
 (fn safely [f]
   (xpcall f #(set-mode :error-mode mode-name $ (fennel.traceback))))
