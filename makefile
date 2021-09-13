@@ -9,22 +9,16 @@ DESCRIPTION="Minimal setup for trying out Phil Hagelberg's fennel/love game desi
 LIBS := $(wildcard lib/*)
 LUA := $(wildcard *.lua)
 SRC := $(wildcard *.fnl)
-OUT := $(patsubst %.fnl,%.lua,$(SRC))
 
+run: ; love .
 
-run: $(OUT) ; love .
+count: ; cloc *.fnl
 
-count: ; cloc *.fnl --force-lang=clojure
-
-clean: ; rm -rf releases/* $(OUT)
-
-cleansrc: ; rm -rf $(OUT)
-
-%.lua: %.fnl; lua lib/fennel --compile --correlate $< > $@
+clean: ; rm -rf releases/*
 
 LOVEFILE=releases/$(NAME)-$(VERSION).love
 
-$(LOVEFILE): $(LUA) $(OUT) $(LIBS)
+$(LOVEFILE): $(LUA) $(SRC) $(LIBS)
 	mkdir -p releases/
 	find $^ -type f | LC_ALL=C sort | env TZ=UTC zip -r -q -9 -X $@ -@
 
