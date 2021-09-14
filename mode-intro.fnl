@@ -1,3 +1,5 @@
+(import-macros {: incf} :sample-macros)
+
 (var counter 0)
 (var time 0)
 
@@ -8,7 +10,8 @@
              (if (< counter 65535)
                  (set counter (+ counter 1))
                  (set counter 0))
-             (set time (+ time dt))
+             (incf time dt)
+             ;;(set time (+ time dt))
              (when (> time 3)
                (love.event.quit)))
  :keypressed (fn keypressed [key set-mode]
