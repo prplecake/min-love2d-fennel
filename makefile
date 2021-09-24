@@ -43,7 +43,7 @@ releases/$(NAME)-$(VERSION)-win.zip: $(LOVEFILE)
 	mv releases/$(NAME)-win32.zip $@
 
 releases/$(NAME)-$(VERSION)-web.zip: $(LOVEFILE)
-	cd releases && ../buildtools/love-js/love-js.sh $(PWD)/releases $(NAME) $(VERSION)
+	cd releases && ../buildtools/love-js/love-js.sh $(PWD)/releases $(NAME) $(VERSION) false
 
 linux: releases/$(NAME)-$(VERSION)-x86_64.AppImage
 mac: releases/$(NAME)-$(VERSION)-macos.zip

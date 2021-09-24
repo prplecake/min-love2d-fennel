@@ -1,5 +1,7 @@
 var Module;
 
+var CACHEMODULE = {{{cachemodule}}};
+
 if (typeof Module === 'undefined') Module = eval('(function() { try { return Module || {} } catch(e) { return {} } })()');
 
 if (!Module.expectedDataFileDownloads) {
@@ -250,20 +252,25 @@ Module.expectedDataFileDownloads++;
       openDatabase(
         function(db) {
           checkCachedPackage(db, PACKAGE_PATH + PACKAGE_NAME,
-            function(useCached) {
+             function(useCached) {
               Module.preloadResults[PACKAGE_NAME] = {fromCache: useCached};
-              if (useCached) {
+                if (useCached && CACHEMODULE) {
                 console.info('loading ' + PACKAGE_NAME + ' from cache');
                 fetchCachedPackage(db, PACKAGE_PATH + PACKAGE_NAME, processPackageData, preloadFallback);
               } else {
                 console.info('loading ' + PACKAGE_NAME + ' from remote');
                 fetchRemotePackage(REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE,
                   function(packageData) {
+                    if(CACHEMODULE){
                     cacheRemotePackage(db, PACKAGE_PATH + PACKAGE_NAME, packageData, {uuid:PACKAGE_UUID}, processPackageData,
                       function(error) {
                         console.error(error);
                         processPackageData(packageData);
-                      });
+                      });}
+                      else {
+                          processPackageData(packageData);
+                      }
+                                       
                   }
                   , preloadFallback);
               }

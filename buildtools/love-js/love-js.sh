@@ -3,7 +3,7 @@ help="love-js.sh: \n\
     For the full project please see https://github.com/Davidobot/love.js \n\
 \n\
 usage: \n\
-    ./love-js.sh [directory-name] [project-name] [version] \n\
+    ./love-js.sh [directory-name] [project-name] [version] [cache]\n\
 \n\
 eg: \n\
     ./love-js.sh ../../releases/ project 0.1.0 \n\
@@ -21,7 +21,6 @@ fi
 release_dir=$1
 name=$2
 version=$3
-
 ## confirm that $release_dir/$name-$version.love exists
 if [ ! -f $release_dir/$name-$version.love ]; then
     echo "love file not found!"
@@ -33,9 +32,12 @@ release="compat"
 canvas_colour="62, 50, 100"
 page_colour=$canvas_colour
 text_colour="223, 7, 114"
-initial_memory=0 #$(du -b $release_dir/$name-$version.love | awk '{print $1}')
+initial_memory=0
+module_size=$(du -b $release_dir/$name-$version.love | awk '{print $1}')
 title=$(echo $name-$version | sed -r 's/\<./\U&/g' | sed -r 's/-/\ /g')
+cachemodule=$4
 
+echo $release_dir $name $version $cachemodule
 # echo $title " " $canvas_colour " " $text_colour " " $initial_memory
 
 call_dir=$(pwd)
@@ -55,7 +57,8 @@ cat src/love.css | \
         $name-$version/theme/love.css
 
 cat src/game.js | \
-    sed "s/{{{metadata}}}/{\"package_uuid\":\"2fd99e56-5455-45dd-86dd-7af724874d65\",\"remote_package_size\":4506139,\"files\":[{\"filename\":\"\/game.love\",\"crunched\":0,\"start\":0,\"end\":4506139,\"audio\":false}]}/" > \
+    sed "s/{{{cachemodule}}}/${cachemodule}/g" | \
+    sed "s/{{{metadata}}}/{\"package_uuid\":\"2fd99e56-5455-45dd-86dd-7af724874d65\",\"remote_package_size\":$module_size,\"files\":[{\"filename\":\"\/game.love\",\"crunched\":0,\"start\":0,\"end\":$module_size,\"audio\":false}]}/" > \
         $name-$version/game.js
 
 cp src/consolewrapper.js $name-$version
