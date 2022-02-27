@@ -756,7 +756,7 @@ cd "$RELEASE_DIR"
 
 ## MacOS ##
 if [[ ! -f "$CACHE_DIR/love-$LOVE_VERSION-macos.zip" ]]; then
-    curl -L -C - -o $CACHE_DIR/love-$LOVE_VERSION-macos.zip https://bitbucket.org/rude/love/downloads/love-$LOVE_VERSION-macos.zip
+    curl -L -C - -o $CACHE_DIR/love-$LOVE_VERSION-macos.zip https://github.com/love2d/love/releases/download/$LOVE_VERSION/love-$LOVE_VERSION-macos.zip
 fi
 unzip -qq "$CACHE_DIR/love-$LOVE_VERSION-macos.zip"
 
@@ -964,7 +964,7 @@ cd "$RELEASE_DIR"
 if [[ $X32 == true ]]; then
 
     if [[ ! -f "$CACHE_DIR/love-$LOVE_VERSION-win32.zip" ]]; then
-        curl -L -C - -o "$CACHE_DIR/love-$LOVE_VERSION-win32.zip" "https://bitbucket.org/rude/love/downloads/love-$LOVE_VERSION-win32.zip"
+        curl -L -C - -o "$CACHE_DIR/love-$LOVE_VERSION-win32.zip" "https://github.com/love2d/love/releases/download/$LOVE_VERSION/love-$LOVE_VERSION-win32.zip"
     fi
 
     unzip -qq "$CACHE_DIR/love-$LOVE_VERSION-win32.zip"
@@ -995,9 +995,9 @@ if [[ $X64 == true ]] && compare_version "$LOVE_VERSION" '>=' '0.8.0'; then
 
     if [[ ! -f "$CACHE_DIR/love-$LOVE_VERSION-win64.zip" ]]; then
         if compare_version "$LOVE_VERSION" '>=' '0.9.0'; then
-            curl -L -C - -o "$CACHE_DIR/love-$LOVE_VERSION-win64.zip" "https://bitbucket.org/rude/love/downloads/love-$LOVE_VERSION-win64.zip"
+            curl -L -C - -o "$CACHE_DIR/love-$LOVE_VERSION-win64.zip" "https://github.com/love2d/love/releases/download/$LOVE_VERSION/love-$LOVE_VERSION-win64.zip"
         else
-            curl -L -C - -o "$CACHE_DIR/love-$LOVE_VERSION-win-x64.zip" "https://bitbucket.org/rude/love/downloads/love-$LOVE_VERSION-win-x64.zip"
+            curl -L -C - -o "$CACHE_DIR/love-$LOVE_VERSION-win-x64.zip"  "https://github.com/love2d/love/releases/download/$LOVE_VERSION/love-$LOVE_VERSION-win64.zip"
         fi
     fi
 
