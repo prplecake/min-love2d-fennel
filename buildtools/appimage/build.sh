@@ -18,7 +18,7 @@ CACHE_DIR=${HOME}/.cache/love-release/love
 LOVE_TAR=$CACHE_DIR/love-${VERSION}-${ARCH}.tar.gz
 
 if ! test -d ${CACHE_DIR}; then
-    mkdir ${CACHE_DIR}
+    mkdir -p ${CACHE_DIR}
 fi
 
 if ! test -f ${LOVE_TAR}; then
@@ -47,8 +47,8 @@ main() {
 
         # Extract the tarball build into a folder
         rm -rf love-prepared
-        mkdir love-prepared
-        tar xf ${LOVE_TAR} -C love-prepared --strip-components=1
+        mkdir -p love-prepared
+        tar -xf ${LOVE_TAR} -C love-prepared --strip-components=1
 
         cd love-prepared
 
