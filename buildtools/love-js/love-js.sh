@@ -1,72 +1,205 @@
-help="love-js.sh: \n\
-    A tool for asembling love.js projects without relying on npm / node. \n\
+#!/bin/bash
+
+help="love-js.sh: \n
+    A tool for assembling love.js projects without relying on npm / node. \n\
     For the full project please see https://github.com/Davidobot/love.js \n\
 \n\
 usage: \n\
-    ./love-js.sh [directory-name] [project-name] [version] [cache]\n\
-\n\
+    ./love-js.sh [love-file] [project-name] [opts]\n\
+\n
+opts:\n
+  -v= (--version=) Version of the Game. Will be included in file name.\n
+  -o= (--output-directory=) Target directory. Defaults to PWD\n
+  -t= (--text-colour=) Text Colour. Defaults to \"240,234,214\"\n
+  -c= (--canvas-colour=) Canvas Colour. Defaults to \"54,69,79\"\n
+  -a= (--author=) Author (Shows up on loading page).\n
+  -w= (--width=) Canvas Width (game width in conf). Defaults to 800\n
+  -h= (--height=) Canvas Height (game height in conf). Defaults to 600\n
+  -r  (--run) Set flag if you want to run a local copy on port 8000\n
+  -d  (--debug) Set flag for debug info\n
+  -h  (--help) Display this text\n
+\n
 eg: \n\
-    ./love-js.sh ../../releases/ project 0.1.0 \n\
-    ./tools/love-js/love-js.sh releases project 0.1.0\n\
-\n\
-"
 
-if [ "$#" -lt  "3" ]
+Pack up sample.love\n
+\t./love-js.sh sample.love sample\n
+\t> sample-web.zip\n
+\n
+Pack up sample.love version 0.1.0\n
+\t./love-js.sh sample-0.1.0.love sample -v=0.1.0\n
+\t> sample-0.1.0-web.zip\n
+\n
+Pack up sample.love and set the background colour to black\n
+\t./love-js.sh sample-0.1.0.love sample -v=0.1.0 -c=\"0,0,0\"\n
+\t> sample-0.1.0-web.zip\n
+\n
+Pack up sample.love and set the author to \"Sample Name\"\n
+\t./love-js.sh sample-0.1.0.love sample -a=\"Sample Name\"\n
+\t> sample-web.zip"
+
+if [ "$#" -lt  "2" ]
   then
-      echo "ERROR! love-js.sh expects three arguments."
+      echo "ERROR! love-js.sh expects at least two arguments."
       echo -e $help
       exit 1
 fi
 
-release_dir=$1
+love_file=$1
 name=$2
-version=$3
 ## confirm that $release_dir/$name-$version.love exists
-if [ ! -f $release_dir/$name-$version.love ]; then
+if [ ! -f $love_file ]; then
     echo "love file not found!"
-    echo $release_dir/$name-$version.love
+    echo $love_file
     exit 1
 fi
 
-release="compat"
-canvas_colour="62, 50, 100"
-page_colour=$canvas_colour
-text_colour="223, 7, 114"
-initial_memory=0
-module_size=$(du -b $release_dir/$name-$version.love | awk '{print $1}')
-title=$(echo $name-$version | sed -r 's/\<./\U&/g' | sed -r 's/-/\ /g')
-cachemodule=$4
+if [ -f /proc/sys/kernel/random/uuid ]; then
+   uuid=$(cat /proc/sys/kernel/random/uuid)
+else
+    uuid="2fd99e56-5455-45dd-86dd-7af724874d65"
+fi
 
-echo $release_dir $name $version $cachemodule
-# echo $title " " $canvas_colour " " $text_colour " " $initial_memory
+author="";
+run=false;
+debug=false;
+gethelp=false;
+width=800
+height=600
+release="compat"
+canvas_colour="54,69,79"
+page_colour=$canvas_colour
+text_colour="240,234,214"
+initial_memory=0
+module_size=$(du -b $love_file | awk '{print $1}')
+title=$(echo $name | sed -r 's/\<./\U&/g' | sed -r 's/-/\ /g')
+version=""
+dash_version=""
+output_dir=$(pwd)
+cachemodule="true"
+
+for i in "$@"
+do
+case $i in
+    -v=*|--version=*)
+    version="${i#*=}"
+    dash_version="-${i#*=}"
+    ;;
+    -o=*|--output-directory=*)
+    output_dir="${i#*=}"
+    ;;
+    -w=*|--width=*)
+    width="${i#*=}"
+    ;;    
+    -h=*|--height=*)
+    height="${i#*=}"
+    ;;
+    -c=*|--text-colour=*)
+    text_colour="${i#*=}"
+    ;;
+    -t=*|--canvas-colour=*)
+    canvas_colour="${i#*=}"
+    ;;
+    -a=*|--author=*)
+    author="${i#*=}"
+    ;;        
+    -r|--run)
+    run=true
+    ;;
+    -d|--debug)
+    debug=true
+    ;;
+    -h|--help)
+    gethelp=true
+    ;;
+    -n|--no-cache)
+    cachemodule="false"
+    ;;    
+    *)
+            # unknown option
+    ;;
+esac
+done
+
+
+file_name=$output_dir/$name$dash_version-web
+
+debug (){
+    if [ $debug = true ]
+    then
+        echo ""
+        echo "Debug:         love-js.sh"
+        echo "love file:     ${love_file}"
+        echo "output file:   $file_name"
+        echo "author:        $author"
+        echo "version:       $version"
+        echo "text colour:   $text_colour"
+        echo "canvas colour: $canvas_colour"
+        echo "canvas size:   ${height}, ${width}"
+        echo "run:           ${run}"
+        echo "use cache:     $cachemodule"
+    fi
+}
 
 call_dir=$(pwd)
-cd "$(dirname "$0")"
+root="$(dirname "$0")"
 
-mkdir -p $name-$version && mkdir -p $name-$version/theme
+build(){
+    rm -fr $file_name
+    mkdir -p $file_name && mkdir -p $file_name/theme
 
-cat src/index.html | \
-    sed "s/{{title}}/${title}/g" | \
-    sed "s/{{initial-memory}}/${initial_memory}/g" | \
-    sed "s/{{canvas-colour}}/${canvas_colour}/g" | \
-    sed "s/{{text-colour}}/${text_colour}/g" > \
-    $name-$version/index.html
+    cat $root/src/index.html | \
+        sed "s/{{title}}/${title}/g" | \
+        sed "s/{{version}}/${version}/g" | \
+        sed "s/{{author}}/${author}/g" | \
+        sed "s/{{width}}/${width}/g" | \
+        sed "s/{{height}}/${height}/g" | \
+        sed "s/{{initial-memory}}/${initial_memory}/g" | \
+        sed "s/{{canvas-colour}}/${canvas_colour}/g" | \
+        sed "s/{{text-colour}}/${text_colour}/g" > \
+            $file_name/index.html
+    
+    cat $root/src/love.css | \
+        sed "s/{{page-colour}}/${page_colour}/g" > \
+            $file_name/theme/love.css
+    
+    cat $root/src/game.js | \
+        sed "s/{{{cachemodule}}}/${cachemodule}/g" | \
+        sed "s/{{{metadata}}}/{\"package_uuid\":\"${uuid}\",\"remote_package_size\":$module_size,\"files\":[{\"filename\":\"\/game.love\",\"crunched\":0,\"start\":0,\"end\":$module_size,\"audio\":false}]}/" > \
+            $file_name/game.js
+    cp $root/src/consolewrapper.js $file_name
+    cp $love_file $file_name/game.love
+    cp $root/src/$release/love.js $file_name
+    cp $root/src/$release/love.wasm $file_name
+    cp $root/src/release/love.worker.js $file_name
+}
 
-cat src/love.css | \
-    sed "s/{{page-colour}}/${page_colour}/g" > \
-        $name-$version/theme/love.css
+clean(){
+    rm -rf $file_name
+}
 
-cat src/game.js | \
-    sed "s/{{{cachemodule}}}/${cachemodule}/g" | \
-    sed "s/{{{metadata}}}/{\"package_uuid\":\"2fd99e56-5455-45dd-86dd-7af724874d65\",\"remote_package_size\":$module_size,\"files\":[{\"filename\":\"\/game.love\",\"crunched\":0,\"start\":0,\"end\":$module_size,\"audio\":false}]}/" > \
-        $name-$version/game.js
+release (){
+    rm -fr $file_name
+    build
+    debug
+    zip -r -q tmp $file_name
+    rm -f $file_name.zip
+    mv tmp.zip $file_name.zip
+    clean
+}
 
-cp src/consolewrapper.js $name-$version
-# cp src/game.js $name-$version
-cp $release_dir/$name-$version.love $name-$version/game.love
-cp src/$release/love.js $name-$version
-cp src/$release/love.wasm $name-$version
-cp src/release/love.worker.js $name-$version
-zip -r -q tmp $name-$version
-mv tmp.zip $call_dir/$name-$version-web.zip
-rm -rf $name-$version
+run (){
+    debug
+    build
+    cd $file_name
+    python2.7 -m SimpleHTTPServer
+}
+
+if [ $gethelp = true ]
+then
+    echo -e $help
+elif [ $run = false ]
+then
+    release
+else
+    run
+fi

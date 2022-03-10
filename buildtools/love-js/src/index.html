@@ -12,7 +12,8 @@
     <center>
       <div>
         <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-        <canvas id="loadingCanvas" oncontextmenu="event.preventDefault()" width="800" height="600"></canvas>
+        <canvas id="loadingCanvas" oncontextmenu="event.preventDefault()"
+                width="{{width}}" height="{{height}}"></canvas>
       </div>
     </center>
 
@@ -46,9 +47,17 @@
               goFullScreen();
           }
       }
-      var loadingContext = document.getElementById('loadingCanvas').getContext('2d');
-      function drawLoadingText(text) {
-        var canvas = loadingContext.canvas;
+     var loadingContext = document.getElementById('loadingCanvas').getContext('2d');
+     var complete = false;
+     function drawLoadingText(text, soFar, total) {
+          var canvas = loadingContext.canvas;
+          var ratio = complete ? 1 : 0;
+          if (soFar && total){
+              ratio = soFar / total
+          }
+         if (ratio == 1){
+             complete = true
+         }
           //
           loadingContext.fillStyle = "rgb({{canvas-colour}})";
           loadingContext.fillRect(0, 0, canvas.scrollWidth, canvas.scrollHeight);
@@ -57,13 +66,39 @@
           loadingContext.textAlign = 'center'
           //
           loadingContext.fillStyle = "rgb({{text-colour}})";
-          loadingContext.fillText(text, canvas.scrollWidth / 2, canvas.scrollHeight / 2);
+          loadingContext.fillText(text, canvas.scrollWidth / 2, (canvas.scrollHeight / 2) - 40);
           //
-          loadingContext.fillText("{{title}}!", canvas.scrollWidth / 2, canvas.scrollHeight / 4);
-         loadingContext.fillText("Powered By LÖVE.", canvas.scrollWidth / 2, canvas.scrollHeight / 4 * 3);
-      }
+          loadingContext.beginPath();
+          loadingContext.strokeStyle = "rgb({{text-colour}})";
+          loadingContext.rect((canvas.scrollWidth / 2) - 200,
+                              ( canvas.scrollHeight / 2) - 20,
+                              400,
+                              40
+              
+              
+          );
+          loadingContext.stroke();
+          loadingContext.beginPath();
+          loadingContext.rect((canvas.scrollWidth / 2) - 200,
+                              ( canvas.scrollHeight / 2) - 20,
+                              400 * ratio,
+                              40
+              
+              
+          );
+          loadingContext.fill();
+          loadingContext.font = '4em arial';
+          loadingContext.fillText("{{title}}", canvas.scrollWidth / 2, canvas.scrollHeight / 4);
+          loadingContext.font = '2em arial';
+          loadingContext.fillText("{{version}}", canvas.scrollWidth / 2, (canvas.scrollHeight / 4 + 45));
+          loadingContext.font = '1em arial';
+          loadingContext.textAlign = 'left'
+          loadingContext.fillText("Powered By LÖVE", canvas.scrollWidth / 2 - 300, canvas.scrollHeight / 4 * 3);
+         loadingContext.textAlign = 'right'
+         loadingContext.fillText("Game By: {{author}}", canvas.scrollWidth / 2 + 300, canvas.scrollHeight / 4 * 3);
+     }
 
-      window.onload = function () { window.focus(); };
+     window.onload = function () { window.focus(); };
       window.onclick = function () { window.focus(); };
 
       window.addEventListener("keydown", function(e) {
@@ -87,9 +122,9 @@
 
           return canvas;
         })(),
-        setStatus: function(text) {
+        setStatus: function(text, soFar, total) {
           if (text) {
-            drawLoadingText(text);
+              drawLoadingText(text, soFar, total);
           } else if (Module.remainingDependencies === 0) {
             document.getElementById('loadingCanvas').style.display = 'none';
             document.getElementById('canvas').style.display = 'block';
@@ -100,7 +135,9 @@
         monitorRunDependencies: function(left) {
           this.remainingDependencies = left;
           this.totalDependencies = Math.max(this.totalDependencies, left);
-          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.',
+                           this.totalDependencies-left,
+                           this.totalDependencies);
         }
       };
       Module.setStatus('Downloading...');

@@ -43,13 +43,16 @@ releases/$(NAME)-$(VERSION)-win.zip: $(LOVEFILE)
 	mv releases/$(NAME)-win32.zip $@
 
 releases/$(NAME)-$(VERSION)-web.zip: $(LOVEFILE)
-	cd releases && ../buildtools/love-js/love-js.sh $(PWD)/releases $(NAME) $(VERSION) false
+	buildtools/love-js/love-js.sh releases/$(NAME)-$(VERSION).love $(NAME) -v=$(VERSION) -a=$(AUTHOR) -o=releases
 
 linux: releases/$(NAME)-$(VERSION)-x86_64.AppImage
 mac: releases/$(NAME)-$(VERSION)-macos.zip
 windows: releases/$(NAME)-$(VERSION)-win.zip
 web: releases/$(NAME)-$(VERSION)-web.zip
 
+
+runweb: $(LOVEFILE)
+	buildtools/love-js/love-js.sh $(LOVEFILE) $(NAME) -v=$(VERSION) -a=$(AUTHOR) -o=releases -r
 # If you release on itch.io, you should install butler:
 # https://itch.io/docs/butler/installing.html
 
