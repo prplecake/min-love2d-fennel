@@ -5,7 +5,6 @@ ITCH_ACCOUNT=change-me-too
 URL=https://gitlab.com/alexjgriffith/min-love2d-fennel
 AUTHOR="Your Name"
 DESCRIPTION="Minimal setup for trying out Phil Hagelberg's fennel/love game design process."
-
 LIBS := $(wildcard lib/*)
 LUA := $(wildcard *.lua)
 SRC := $(wildcard *.fnl)

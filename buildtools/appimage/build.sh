@@ -13,20 +13,30 @@ fi
 VERSION="$1"
 LOVEFILE="$2"
 
-LOVE_TAR_URL=https://github.com/love2d/love/releases/download/${VERSION}/love-${VERSION}-linux-${ARCH}.tar.gz
+# eg 
+# https://github.com/love2d/love/releases/download/11.4/love-11.4-x86_64.AppImage
+# https://github.com/love2d/love/releases/download/11.3/love-11.3-x86_64.AppImage
+# https://github.com/love2d/love/releases/download/11.2/love-11.2-x86_64.AppImage
+# https://github.com/love2d/love/releases/download/11.1/love-11.1-linux-x86_64.AppImage
+LOVE_AppImage_URL=https://github.com/love2d/love/releases/download/${VERSION}/love-${VERSION}-${ARCH}.AppImage
+if [ $VERSION == "11.1" ]
+then
+    LOVE_AppImage_URL=https://github.com/love2d/love/releases/download/${VERSION}/love-${VERSION}-linux-${ARCH}.AppImage
+fi
 CACHE_DIR=${HOME}/.cache/love-release/love
-LOVE_TAR=$CACHE_DIR/love-${VERSION}-${ARCH}.tar.gz
+LOVE_AppImage=$CACHE_DIR/love-${VERSION}-${ARCH}.AppImage
 
 if ! test -d ${CACHE_DIR}; then
     mkdir -p ${CACHE_DIR}
 fi
 
-if ! test -f ${LOVE_TAR}; then
-    curl -L -C - -o ${LOVE_TAR} ${LOVE_TAR_URL}
+if ! test -f ${LOVE_AppImage}; then
+    curl -L -C - -o ${LOVE_AppImage} ${LOVE_AppImage_URL}
+    chmod +x ${LOVE_AppImage}
 fi
 
-if ! test -f ${LOVE_TAR}; then
-    echo "No tarball found for $VERSION in $LOVE_TAR"
+if ! test -f ${LOVE_AppImage}; then
+    echo "No tarball found for $VERSION in $LOVE_AppImage"
     exit 1
 fi
 
@@ -42,20 +52,16 @@ download_if_needed() {
 }
 
 main() {
-        download_if_needed appimagetool-${ARCH}.AppImage
-        download_if_needed AppRun-${ARCH}
-
+        download_if_needed appimagetool-${ARCH}.AppImage    
         # Extract the tarball build into a folder
         rm -rf love-prepared
         mkdir -p love-prepared
-        tar -xf ${LOVE_TAR} -C love-prepared --strip-components=1
-
         cd love-prepared
-
+        $LOVE_AppImage --appimage-extract 1> /dev/null
+        mv squashfs-root/* .
+        rm squashfs-root/.DirIcon
+        rmdir squashfs-root
         # Add our small wrapper script (yay, more wrappers), and AppRun
-        cp ../wrapper usr/bin/wrapper-love
-        cp ../AppRun-${ARCH} AppRun
-
         local desktopfile="love.desktop"
         local icon="love"
         local target="love-${VERSION}"
@@ -69,16 +75,23 @@ main() {
                 cp ../../game.svg .
         fi
         if test -f ${LOVEFILE}; then
+                if [ $VERSION == "11.4" ]
+                then
+                    dir="bin"
+                else
+                    dir="usr/bin"
+                fi                
                 target="game"
-                cat usr/bin/love ${LOVEFILE} > usr/bin/love-fused
-                mv usr/bin/love-fused usr/bin/love
-                chmod +x usr/bin/love
+                cat $dir/love ${LOVEFILE} > $dir/love-fused
+                mv $dir/love-fused $dir/love
+                chmod +x $dir/love
     else
                 echo "Love file ${LOVEFILE} not found"
         fi
 
         # Add our desktop file
-        sed -e 's/%BINARY%/wrapper-love/' -e "s/%ICON%/${icon}/" "${desktopfile}.in" > "$desktopfile"
+        mv ${desktopfile} ${desktopfile}.in
+        sed -e "s/%ICON%/${icon}/" "${desktopfile}.in" > "$desktopfile"
         rm "${desktopfile}.in"
 
         # Add a DirIcon
@@ -95,9 +108,11 @@ main() {
         # Now build the final AppImage
         cd ..
 
+        # ./love-prepared/AppRun -n love-prepared "${target}-${ARCH}.AppImage"
         # Work around missing FUSE/docker
-        ./appimagetool-${ARCH}.AppImage --appimage-extract
-        ./squashfs-root/AppRun -n love-prepared "${target}-${ARCH}.AppImage"
+        ./appimagetool-${ARCH}.AppImage --appimage-extract 1> /dev/null
+        ./squashfs-root/AppRun -n love-prepared "${target}-${ARCH}.AppImage" 1> /dev/null
+        rm -rf love-prepared/
 }
 
 main "$@"
