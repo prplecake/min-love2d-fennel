@@ -68,7 +68,6 @@ height=600
 release="compat"
 love_version="11.4"
 canvas_colour="54,69,79"
-page_colour=$canvas_colour
 text_colour="240,234,214"
 initial_memory=0
 module_size=$(du -b $love_file | awk '{print $1}')
@@ -94,10 +93,10 @@ case $i in
     -h=*|--height=*)
     height="${i#*=}"
     ;;
-    -c=*|--text-colour=*)
+    -t=*|--text-colour=*)
     text_colour="${i#*=}"
     ;;
-    -t=*|--canvas-colour=*)
+    -c=*|--canvas-colour=*)
     canvas_colour="${i#*=}"
     ;;
     -a=*|--author=*)
@@ -121,6 +120,7 @@ case $i in
 esac
 done
 
+page_colour=$canvas_colour
 
 file_name=$output_dir/$name$dash_version-web
 
