@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # LÖVE version
-LOVE_DEF_VERSION=0.11.3
+LOVE_DEF_VERSION=0.11.4
 
 
 
@@ -405,7 +405,7 @@ check_deps
 
 # Get latest LÖVE version number
 gen_version $LOVE_DEF_VERSION
-LOVE_WEB_VERSION=$(curl -s https://love2d.org/releases.xml | grep -m 2 "<title>" | tail -n 1 | grep -Eo "[0-9]+.[0-9]+.[0-9]+")
+LOVE_WEB_VERSION=$(curl -s https://love2d.org/releases.xml | grep -m 2 "<title>" | tail -n 1 | grep -Eo "[0-9]+.[0-9]+")
 gen_version $LOVE_WEB_VERSION
 
 INSTALLED=false

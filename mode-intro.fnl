@@ -5,8 +5,13 @@
 
 (love.graphics.setNewFont 30)
 
+(local (major minor revision) (love.getVersion))
+
 {:draw (fn draw [message]
          (local (w h _flags) (love.window.getMode))
+         (love.graphics.printf
+          (: "Love Version: %s.%s.%s"
+             :format  major minor revision) 0 10 w :center)
          (love.graphics.printf
           (: "This window should close in %0.1f seconds"
              :format (math.max 0 (- 3 time)))

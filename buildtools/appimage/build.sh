@@ -13,7 +13,6 @@ fi
 VERSION="$1"
 LOVEFILE="$2"
 
-# eg 
 # https://github.com/love2d/love/releases/download/11.4/love-11.4-x86_64.AppImage
 # https://github.com/love2d/love/releases/download/11.3/love-11.3-x86_64.AppImage
 # https://github.com/love2d/love/releases/download/11.2/love-11.2-x86_64.AppImage
@@ -57,7 +56,7 @@ main() {
         rm -rf love-prepared
         mkdir -p love-prepared
         cd love-prepared
-        $LOVE_AppImage --appimage-extract 1> /dev/null
+        $LOVE_AppImage --appimage-extract 1> /dev/null 2> /dev/null
         mv squashfs-root/* .
         rm squashfs-root/.DirIcon
         rmdir squashfs-root
@@ -110,8 +109,8 @@ main() {
 
         # ./love-prepared/AppRun -n love-prepared "${target}-${ARCH}.AppImage"
         # Work around missing FUSE/docker
-        ./appimagetool-${ARCH}.AppImage --appimage-extract 1> /dev/null
-        ./squashfs-root/AppRun -n love-prepared "${target}-${ARCH}.AppImage" 1> /dev/null
+        ./appimagetool-${ARCH}.AppImage --appimage-extract 1> /dev/null 2> /dev/null
+        ./squashfs-root/AppRun -n love-prepared "${target}-${ARCH}.AppImage" 1> /dev/null 2> /dev/null
         rm -rf love-prepared/
 }
 

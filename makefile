@@ -1,5 +1,5 @@
 VERSION=0.1.0
-LOVE_VERSION=11.3
+LOVE_VERSION=11.4
 NAME=change-me
 ITCH_ACCOUNT=change-me-too
 URL=https://gitlab.com/alexjgriffith/min-love2d-fennel
@@ -51,7 +51,7 @@ web: releases/$(NAME)-$(VERSION)-web.zip
 
 
 runweb: $(LOVEFILE)
-	buildtools/love-js/love-js.sh $(LOVEFILE) $(NAME) -v=$(VERSION) -a=$(AUTHOR) -o=releases -r
+	buildtools/love-js/love-js.sh $(LOVEFILE) $(NAME) -v=$(VERSION) -a=$(AUTHOR) -o=releases -r -n
 # If you release on itch.io, you should install butler:
 # https://itch.io/docs/butler/installing.html
 

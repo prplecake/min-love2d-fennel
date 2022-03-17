@@ -66,6 +66,7 @@ gethelp=false;
 width=800
 height=600
 release="compat"
+love_version="11.4"
 canvas_colour="54,69,79"
 page_colour=$canvas_colour
 text_colour="240,234,214"
@@ -166,11 +167,14 @@ build(){
         sed "s/{{{cachemodule}}}/${cachemodule}/g" | \
         sed "s/{{{metadata}}}/{\"package_uuid\":\"${uuid}\",\"remote_package_size\":$module_size,\"files\":[{\"filename\":\"\/game.love\",\"crunched\":0,\"start\":0,\"end\":$module_size,\"audio\":false}]}/" > \
             $file_name/game.js
+    cp $root/src/serve.py $file_name
     cp $root/src/consolewrapper.js $file_name
     cp $love_file $file_name/game.love
-    cp $root/src/$release/love.js $file_name
-    cp $root/src/$release/love.wasm $file_name
-    cp $root/src/release/love.worker.js $file_name
+    cp $root/src/love-$love_version/$release/love.js $file_name
+    cp $root/src/love-$love_version/$release/love.wasm $file_name
+    if [ $release == "release" ]; then
+        cp $root/src/release/love.worker.js $file_name
+    fi
 }
 
 clean(){
@@ -191,7 +195,7 @@ run (){
     debug
     build
     cd $file_name
-    python2.7 -m SimpleHTTPServer
+    python serve.py
 }
 
 if [ $gethelp = true ]
