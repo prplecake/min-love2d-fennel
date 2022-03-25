@@ -44,6 +44,13 @@ if [ "$#" -lt  "2" ]
       exit 1
 fi
 
+# use gdu on macOS, fixes 'invalid option -b' error
+if [ "$(uname -s)" = "Darwin" ]; then
+  DU_CMD=gdu
+else
+ DU_CMD=du
+fi
+
 love_file=$1
 name=$2
 ## confirm that $release_dir/$name-$version.love exists
@@ -70,7 +77,7 @@ love_version="11.4"
 canvas_colour="54,69,79"
 text_colour="240,234,214"
 initial_memory=0
-module_size=$(du -b $love_file | awk '{print $1}')
+module_size=$($DU_CMD -b $love_file | awk '{print $1}')
 title=$(echo $name | sed -r 's/\<./\U&/g' | sed -r 's/-/\ /g')
 version=""
 dash_version=""
