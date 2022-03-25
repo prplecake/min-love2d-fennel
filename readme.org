@@ -1,30 +1,52 @@
 * Minimal Fennel Love2D Setup
 
-In a lead up to the annual [[https://itch.io/jam/autumn-lisp-game-jam-2018][Autumn Lisp Game Jam]] I thought I'd look into Phil Hegelberg's approach to last Aprils Jam, using [[https://love2d.org/][love2d]] in concert with [[https://fennel-lang.org/][fennel]]. Phil outlines his approach on his [[https://technomancy.us/187][blog]].
-
-The first step is to see how fennel works as a standalone execution environment, then slowly integrate some of the love2d API.
+In the lead up to the semi-annual [[https://itch.io/jam/autumn-lisp-game-jam-2018][Autumn Lisp Game Jam]] I thought I'd look into Phil Hegelberg's approach to last Aprils Jam, using [[https://love2d.org/][love2d]] in concert with [[https://fennel-lang.org/][fennel]]. Phil outlines his approach on his [[https://technomancy.us/187][blog]].
 
 This repo contains the minimal viable setup to get started with Phil Hegelberg's game design process, plus some additional libraries.
 
+* Getting Started
+The following commands will clone this project and duplicate its structure into a new folder =$PROJECT_NAME=
+
 #+BEGIN_SRC bash
-PROJECT=project-name
-git clone https://gitlab.com/alexjgriffith/min-love2d-fennel.git $PROJECT
-cd $PROJECT
-rm -rf .git
+git clone https://gitlab.com/alexjgriffith/min-love2d-fennel.git 
+./min-love2d-fennel/.duplicate/new-game.sh $PROJECT_NAME
 #+END_SRC
 
-* Phil's Modal Callbacks (PMC)
+Check out the makefile and conf.lua files in =$PROJECT_NAME=, updating them with information relevant to your game.
 
-Phil Hegelberg's [[https://gitlab.com/technomancy/exo-encounter-667/][exo-encounter-667]] is structured using a modal callback system. Each game state has a mode and each mode has a series of specific callbacks.
+You can enter =love .= in the =$PROJECT_NAME= directory to run your game, or =make run=.
 
-If you design your game as a series of states in a very simple state machine, for example *start-screen*, *play* and *end*, with unidirectional progression, you can easily separate the logic for each state into state/mode specific callbacks. As an example, in order to have state dependant rendering that differs between start-screen,play and end you could provide a *draw* callback for each of those states. Similarly if we need state dependent logic and keyboard input we could provide *update* and *keyboard* callbacks. As you iterate you can add and remove callbacks and states/modes as needed with very little friction.
+The following lines with =Update= should be changed in the =makefile= and =love.conf= to reflect your game.
+
+#+BEGIN_SRC makefile
+VERSION=0.1.0
+LOVE_VERSION=11.4
+NAME=change-me # Update
+ITCH_ACCOUNT=change-me-too # Update
+URL=https://gitlab.com/alexjgriffith/min-love2d-fennel # Update
+AUTHOR="Your Name" # Update
+DESCRIPTION="Minimal setup for trying out Phil Hagelberg's fennel/love game design process." # Update
+#+END_SRC
+
+#+BEGIN_SRC lua
+love.conf = function(t)
+   t.gammacorrect = true
+   t.title, t.identity = "change-me", "Minimal" -- Update
+   t.modules.joystick = false
+   t.modules.physics = false
+   t.window.width = 720
+   t.window.height = 450
+   t.window.vsync = false
+   t.version = "11.4"
+end
+#+END_SRC
 
 * Emacs Setup
 
 Once you install the latest version of [[https://gitlab.com/technomancy/fennel-mode][fennel-mode]], you can run
 =C-u M-x fennel-repl= followed by =love .= to launch a repl.
 
-* Project Structure
+* Default Project Structure
 
 The =make= process as-is will only compile the contents of the root folder and the =lib/= folder+subfolders, so make sure to put your game files in either of those. 
 
@@ -32,6 +54,26 @@ Specifically, every =.fnl= file needed at runtime needs to be situated in the ro
 
 In order to use macros, they have to be put in =.fnl= files inside =lib/=.
 
+* Seperate your Code into a /src directory
+
+  If you want a more opinionated layout, you can use pass in a =--layout= parameter when creating your project.
+
+#+BEGIN_SRC bash
+./min-love2d-fennel/.duplicate/new-game.sh $PROJECT_NAME --layout=seperate-source
+#+END_SRC
+
+This build uses =gamestate= rather than Phil's approach to scene seperation and puts all your =.fnl= files into a =/src= directory. It also provides a seperate makefile that handles this layout. 
+
+Note, any macros will have to be placed in the root of the project or in the =lib= folder (this can be modified in =main.lua=)
+
+Presently the only layouts are =clone= and =seperate-source=. If you want to make your own check out the =.duplicate= directory to see how they work.
+
 * Release Process
 
-Use =make linux=, =make windows=, or =make mac= to create executables for each platform, or =make release= to do all three. Make sure to read the makefile for more commands (and remember to edit your game data in it!)
+Use =make linux=, =make windows=,  =make mac=, or =make web= to create targets for each platform, or =make release= to make all four. Check out the makefile for more commands, and remember to edit your game data in it!
+
+* Phil's Modal Callbacks (PMC)
+
+Phil Hegelberg's [[https://gitlab.com/technomancy/exo-encounter-667/][exo-encounter-667]] is structured using a modal callback system. Each game state has a mode and each mode has a series of specific callbacks.
+
+If you design your game as a series of states in a very simple state machine, for example *start-screen*, *play* and *end*, with unidirectional progression, you can easily separate the logic for each state into state/mode specific callbacks. As an example, in order to have state dependant rendering that differs between start-screen,play and end you could provide a *draw* callback for each of those states. Similarly if we need state dependent logic and keyboard input we could provide *update* and *keyboard* callbacks. As you iterate you can add and remove callbacks and states/modes as needed with very little friction.
