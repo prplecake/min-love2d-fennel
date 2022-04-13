@@ -4,7 +4,7 @@
 ;; can be used in a non-blocking way from another thread.
 
 (fn prompt [cont?]
-  (io.write (if cont? ".." ">> ")) (io.flush) (.. (io.read) "\n"))
+  (io.write (if cont? ".." ">> ")) (io.flush) (.. (tostring (io.read)) "\n"))
 
 ;; This module is loaded twice: initially in the main thread where ... is nil,
 ;; and then again in a separate thread where ... contains the channel used to
